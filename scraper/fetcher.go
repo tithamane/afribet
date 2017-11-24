@@ -28,10 +28,18 @@ func (s *SevenBallFetcher) FetchByDate(date string) []SevenBallDraw {
 	_ = firstPageProcessor.Parse()
 	list = append(list, firstPageProcessor.Draws...)
 
+	if len(firstPageProcessor.MorePages) < 8 {
+		fmt.Println("Date:", date, "Pages:", len(firstPageProcessor.MorePages))
+		fmt.Println("---")
+		fmt.Println(firstPageProcessor.MorePages)
+		fmt.Println("---")
+	}
+
 	// Fetch results for the remaining pages
 	for _, pageLink := range firstPageProcessor.MorePages {
 		page := fetchPage(pageLink)
 		processor := NewSevenBallProcessor(page)
+		_ = processor.Parse()
 		list = append(list, processor.Draws...)
 	}
 
@@ -41,7 +49,7 @@ func (s *SevenBallFetcher) FetchByDate(date string) []SevenBallDraw {
 func fetchPage(url string) string {
 	res, err := http.Get(url)
 	if err != nil {
-		log.Printf("Could not fetch contents of \"%s\"\n", url)
+		log.Printf("Could not fetch contents of \"%s\"\n\t>> %s\n", url, err)
 		return ""
 	}
 

@@ -36,6 +36,11 @@ func (s *SevenBallProcessor) Parse() error {
 	}
 
 	morePages := s.extractMorePageLinks(document)
+	if len(morePages) < 8 {
+		fmt.Println("Links less that 8\n------------")
+		fmt.Println(s.content)
+		fmt.Println("-----------------")
+	}
 	draws := s.extractDraws(document)
 	s.Draws = append(s.Draws, draws...)
 	s.MorePages = append(s.MorePages, morePages...)
@@ -139,7 +144,7 @@ func (s *SevenBallProcessor) getResults(selection *goquery.Selection) []int {
 }
 
 func (s *SevenBallProcessor) extractMorePageLinks(document *goquery.Document) []string {
-	anchors := document.Find(".pagination li:not(.active) a")
+	anchors := document.Find(".pagination a")
 	links := []string{}
 	anchors.Each(func(_ int, s *goquery.Selection) {
 		link, ok := s.Attr("href")

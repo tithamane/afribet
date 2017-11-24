@@ -1,6 +1,11 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
 	"sync"
 )
 
@@ -8,33 +13,54 @@ type sevenBallDrawMap map[int64]*SevenBallDraw
 
 func NewSevenBallDrawResults() *SevenBallDrawResults {
 	return &SevenBallDrawResults{
-		results: make(map[string]sevenBallDrawMap),
+		Results: make(map[string]sevenBallDrawMap),
 	}
 }
 
 type SevenBallDrawResults struct {
 	lock    sync.Mutex
-	results map[string]sevenBallDrawMap
-	total   int64
+	Results map[string]sevenBallDrawMap `json="results"`
+	Total   int64                       `json="total"`
 }
 
-func (s *SevenBallDrawResults) Total() int64 {
-	return s.total
+func (s *SevenBallDrawResults) SaveJSON() error {
+	dataFolder := "data/scraped"
+	err := os.MkdirAll(dataFolder, os.ModePerm)
+	if os.IsNotExist(err) {
+		log.Println(err)
+		return err
+	}
+
+	data, err := json.Marshal(s)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	filename := fmt.Sprintf("%s/seven_ball_results.json", dataFolder)
+	err = ioutil.WriteFile(filename, data, 0777)
+
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
 }
 
 func (s *SevenBallDrawResults) Add(date string, draw SevenBallDraw) {
 	s.lock.Lock()
 
-	drawList, ok := s.results[date]
+	drawList, ok := s.Results[date]
 	if !ok {
 		drawList = make(sevenBallDrawMap)
-		s.results[date] = drawList
+		s.Results[date] = drawList
 	}
 
 	_, ok = drawList[draw.ID]
 	if !ok {
 		// I'm adding a draw that did not exist before
-		s.total++
+		s.Total++
 	}
 
 	drawList[draw.ID] = &draw
