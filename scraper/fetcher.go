@@ -5,11 +5,18 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
+	"time"
+)
+
+const (
+	SevenBallGame = 1
 )
 
 // date - y-m-d
 func formatAfricaGameUrl(date string, page int) string {
-	return fmt.Sprintf("https://www.betgamesafrica.co.za/ext/game/results/testpartner/%s/%d", date, page)
+
+	return fmt.Sprintf("https://www.betgamesafrica.co.za/ext/game/results/testpartner/%s/%d/%d", date, SevenBallGame, page)
 }
 
 func NewSevenBallFetcher() SevenBallFetcher {
@@ -28,20 +35,30 @@ func (s *SevenBallFetcher) FetchByDate(date string) []SevenBallDraw {
 	_ = firstPageProcessor.Parse()
 	list = append(list, firstPageProcessor.Draws...)
 
-	if len(firstPageProcessor.MorePages) < 8 {
-		fmt.Println("Date:", date, "Pages:", len(firstPageProcessor.MorePages))
-		fmt.Println("---")
-		fmt.Println(firstPageProcessor.MorePages)
-		fmt.Println("---")
+	// Download 7 other pages if date is not today,
+	// the html for some dates is inconsistent and needs investigating
+	now := time.Now()
+	today := fmt.Sprintf("%d-%02d-%02d", now.Year(), now.Month(), now.Day())
+	var pageLinks []string
+
+	if strings.Compare(date, today) != 0 {
+		for i := 2; i <= 8; i++ {
+			link := formatAfricaGameUrl(date, i)
+			pageLinks = append(pageLinks, link)
+		}
+	} else {
+		pageLinks = firstPageProcessor.MorePages
 	}
 
 	// Fetch results for the remaining pages
-	for _, pageLink := range firstPageProcessor.MorePages {
+	for _, pageLink := range pageLinks {
 		page := fetchPage(pageLink)
 		processor := NewSevenBallProcessor(page)
 		_ = processor.Parse()
 		list = append(list, processor.Draws...)
 	}
+
+	fmt.Println("Date:", date, " NumberOfResults:", len(list))
 
 	return list
 }
