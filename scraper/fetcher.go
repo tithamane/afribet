@@ -58,8 +58,6 @@ func (s *SevenBallFetcher) FetchByDate(date string) []SevenBallDraw {
 		list = append(list, processor.Draws...)
 	}
 
-	fmt.Println("Date:", date, " NumberOfResults:", len(list))
-
 	return list
 }
 
