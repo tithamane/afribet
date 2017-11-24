@@ -1,7 +1,8 @@
 ## About
 A toy application using golang to scrape and rust to use the processed data
-to try and predict a certain number of numbers the system predicts will come
-be drawn on that day.
+to try and predict a certain number of numbers the system believes will be
+drawn on that day. It's more about visualising the data and seeing if there
+is some sort of pattern that can make prediction possible
 
 Eg. Based on the numbers we have, what are the four numbers that will definitely
 come on on this particular day.
