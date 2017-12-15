@@ -109,8 +109,15 @@ func FetchResultsBetween(w http.ResponseWriter, r *http.Request) {
 }
 
 func SaveSevenBallDrawResults(w http.ResponseWriter, r *http.Request) {
-	log.Println("Saving seven ball results")
+	log.Println("Saving seven ball results as JSON")
 	err := sevenBallDrawResults.SaveJSON()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println(err)
+	}
+
+	log.Println("Saving seven ball formated results as CSV")
+	err = sevenBallDrawResults.SaveCSV()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println(err)
