@@ -123,5 +123,10 @@ func SaveSevenBallDrawResults(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 
+	log.Println("Saving seven ball formated result combinations as CSV")
+	// Error not handled because this is done using go routines
+	// TODO: Handle errors when saving different combinations for results
+	sevenBallDrawResults.SaveCombinationsCSV()
+
 	w.WriteHeader(http.StatusOK)
 }

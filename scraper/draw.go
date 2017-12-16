@@ -114,6 +114,64 @@ func (s *SevenBallDrawResults) SaveCSV() error {
 	return nil
 }
 
+func (s *SevenBallDrawResults) SaveCombinationsCSV() {
+	nCombinations := []int{4}
+	var wg sync.WaitGroup
+	wg.Add(len(nCombinations))
+
+	for _, nCombination := range nCombinations {
+		go func(n int) {
+			s.SaveNCombinationCSV(n)
+			wg.Done()
+		}(nCombination)
+	}
+	wg.Wait()
+	log.Println("Done: NCombinations have been save.")
+}
+
+func (s *SevenBallDrawResults) SaveNCombinationCSV(n int) {
+	dataPath := "data/csv/combinations"
+
+	// Make the os directories if they don't exist
+	err := os.MkdirAll(dataPath, os.ModePerm)
+	if os.IsNotExist(err) {
+		log.Println(err)
+		return
+	}
+
+	csvFilename := fmt.Sprintf("%s/%d_seven_ball.csv", dataPath, n)
+	csvFile, err := os.OpenFile(csvFilename, os.O_RDWR|os.O_CREATE, 0666)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	defer csvFile.Close()
+
+	// Save the results into the created file
+	titles := "draw_id,length,combination_index,unix_time"
+	numbersAsStr := []string{}
+	// TODO: Create labels for the numbers that were part of the results
+	for i := 0; i < n; i++ {
+		number := NthNumber(i + 1)
+		numbersAsStr = append(numbersAsStr, number)
+	}
+	numbers := strings.Join(numbersAsStr, ",")
+	titles = fmt.Sprintf("%s,%s", titles, numbers)
+	titleLine := []byte(fmt.Sprintln(titles))
+	csvFile.Write(titleLine)
+
+	for _, dayResults := range s.Results {
+		for _, draw := range dayResults {
+			combinations := draw.CombinationsN(n)
+			for _, combination := range combinations {
+				line := fmt.Sprintln(combination.ToCSVLine())
+				csvLine := []byte(line)
+				csvFile.Write(csvLine)
+			}
+		}
+	}
+}
+
 func (s *SevenBallDrawResults) Add(date string, draw SevenBallDraw) {
 	s.lock.Lock()
 
@@ -176,6 +234,7 @@ func (s *SevenBallDraw) CombinationsN(n int) []DrawCombination {
 	drawCombinations := []DrawCombination{}
 	for i, combination := range combinations {
 		drawCombination := DrawCombination{
+			ID:               s.ID,
 			Length:           n,
 			CombinationIndex: i,
 			UnixTime:         s.UnixTime,
