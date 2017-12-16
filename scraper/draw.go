@@ -126,7 +126,7 @@ func (s *SevenBallDrawResults) SaveCombinationsCSV() {
 		}(nCombination)
 	}
 	wg.Wait()
-	log.Println("Done: NCombinations have been save.")
+	log.Println("Done: NCombinations have been saved.")
 }
 
 func (s *SevenBallDrawResults) SaveNCombinationCSV(n int) {
@@ -194,7 +194,11 @@ func (s *SevenBallDrawResults) Add(date string, draw SevenBallDraw) {
 
 func (s *SevenBallDrawResults) AddList(date string, draws []SevenBallDraw) {
 	for _, draw := range draws {
-		s.Add(date, draw)
+		// TODO: Handle error where a draw has no numbers
+		drawNumbersLength := len(draw.Numbers)
+		if drawNumbersLength > 0 {
+			s.Add(date, draw)
+		}
 	}
 }
 
