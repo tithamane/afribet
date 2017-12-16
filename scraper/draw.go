@@ -115,7 +115,7 @@ func (s *SevenBallDrawResults) SaveCSV() error {
 }
 
 func (s *SevenBallDrawResults) SaveCombinationsCSV() {
-	nCombinations := []int{4}
+	nCombinations := []int{2, 3, 4}
 	var wg sync.WaitGroup
 	wg.Add(len(nCombinations))
 
@@ -126,7 +126,7 @@ func (s *SevenBallDrawResults) SaveCombinationsCSV() {
 		}(nCombination)
 	}
 	wg.Wait()
-	log.Println("Done: NCombinations have been saved.")
+	log.Printf("Done: NCombinations have been saved for %+v.\n", nCombinations)
 }
 
 func (s *SevenBallDrawResults) SaveNCombinationCSV(n int) {
