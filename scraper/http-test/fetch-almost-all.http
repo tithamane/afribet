@@ -1,0 +1,6 @@
+POST http://localhost:9292/fetch-between HTTP/1.1
+content-type: application/json
+
+{
+    "from": "2016-01-01"
+}
